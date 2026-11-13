@@ -6,11 +6,12 @@ A fresh MERN project, starting with a React client and an Express server.
 
 - React page with a basic title and styling.
 - MongoDB connection and task model.
-- Create and list task endpoints with input validation.
+- Create, view, edit and delete task endpoints with input validation.
+- Task completion and reopening through status updates.
 - Express health endpoint at `/api/health` reports database connectivity.
 - Vite development proxy for API requests.
 
-Editing, deletion, search and the Figma screens are not implemented yet.
+Search and the Figma screens are not implemented yet.
 
 ## Run locally
 
@@ -40,7 +41,10 @@ Open http://127.0.0.1:4173. The API runs on port 3001. Copy `.env.example` to `.
 
 - `GET /api/tasks` lists tasks in scheduled order.
 - `POST /api/tasks` creates a task with a required title and `scheduledAt` timestamp. Description, `endAt` and priority are optional. Priority can be Low, Medium or High.
-- New tasks start In Progress. Status changes will be added in a later step.
+- `GET /api/tasks/:id` returns a task.
+- `PATCH /api/tasks/:id` updates only the supplied fields, including status (In Progress or Completed). Send `endAt: null` to clear the optional end time.
+- `DELETE /api/tasks/:id` removes a task and returns HTTP 204.
+- New tasks start In Progress. Unknown task IDs return 404; malformed IDs and invalid updates return 400.
 - Timestamps must include a time zone, such as `2026-11-15T09:00:00Z` or an explicit UTC offset.
 
 Example create request body:
@@ -69,7 +73,6 @@ npm run build
 
 ## Next steps
 
-1. Add editing, deletion and status changes to the task API.
-2. Build the Figma screens and connect the task form.
-3. Add search, weekly summaries and status updates.
-4. Test the flows and configure deployment.
+1. Build the Figma screens and connect the task form.
+2. Add search and weekly summaries.
+3. Test the flows and configure deployment.

@@ -1,17 +1,16 @@
 import { Router } from 'express';
+import mongoose from 'mongoose';
 import Task from '../models/Task.js';
+import { validateTaskInput } from '../validation/task.js';
 
 const router = Router();
 
-function isValidDateTime(value) {
-  if (typeof value !== 'string' || !/^\d{4}-\d{2}-\d{2}T/.test(value)) return false;
-  if (!/(Z|[+-]\d{2}:\d{2})$/.test(value) || !Number.isFinite(Date.parse(value))) return false;
-
-  // Date.parse rolls dates such as February 31 into March; reject that rollover.
-  const day = value.slice(0, 10);
-  const calendar = new Date(`${day}T00:00:00Z`);
-  return Number.isFinite(calendar.getTime()) && calendar.toISOString().startsWith(day);
-}
+router.param('id', (req, res, next, id) => {
+  if (!mongoose.isObjectIdOrHexString(id)) {
+    return res.status(400).json({ message: 'Invalid task ID.' });
+  }
+  next();
+});
 
 router.get('/', async (req, res) => {
   const tasks = await Task.find().sort({ scheduledAt: 1, _id: 1 });
@@ -19,33 +18,36 @@ router.get('/', async (req, res) => {
 });
 
 router.post('/', async (req, res) => {
-  const body = req.body;
-  if (!body || typeof body !== 'object' || Array.isArray(body)) {
-    return res.status(400).json({ message: 'Please send task details as a JSON object.' });
-  }
-  if (typeof body.title !== 'string' || !body.title.trim()) {
-    return res.status(400).json({ message: 'Task title is required.' });
-  }
-  if (!isValidDateTime(body.scheduledAt)) {
-    return res
-      .status(400)
-      .json({ message: 'A valid date and time with a time zone are required.' });
-  }
-  if (body.description != null && typeof body.description !== 'string') {
-    return res.status(400).json({ message: 'Description must be text.' });
-  }
-  if (body.endAt != null && body.endAt !== '' && !isValidDateTime(body.endAt)) {
-    return res.status(400).json({ message: 'Choose a valid end date and time.' });
-  }
-
-  const task = await Task.create({
-    title: body.title.trim(),
-    description: body.description ?? '',
-    scheduledAt: body.scheduledAt,
-    endAt: body.endAt || null,
-    priority: body.priority ?? '',
-  });
+  const { values, error } = validateTaskInput(req.body);
+  if (error) return res.status(400).json({ message: error });
+  const task = await Task.create(values);
   res.status(201).json({ task });
+});
+
+router.get('/:id', async (req, res) => {
+  const task = await Task.findById(req.params.id);
+  if (!task) return res.status(404).json({ message: 'Task not found.' });
+  res.json({ task });
+});
+
+router.patch('/:id', async (req, res) => {
+  const { values, error } = validateTaskInput(req.body, true);
+  if (error) return res.status(400).json({ message: error });
+
+  const task = await Task.findById(req.params.id);
+  if (!task) return res.status(404).json({ message: 'Task not found.' });
+  Object.assign(task, values);
+  if (task.endAt && task.endAt <= task.scheduledAt) {
+    return res.status(400).json({ message: 'End time must be after the start time.' });
+  }
+  await task.save();
+  res.json({ task });
+});
+
+router.delete('/:id', async (req, res) => {
+  const task = await Task.findByIdAndDelete(req.params.id);
+  if (!task) return res.status(404).json({ message: 'Task not found.' });
+  res.status(204).end();
 });
 
 export default router;

@@ -36,6 +36,14 @@ async function createTask(values) {
   });
 }
 
+async function updateTask(id, values) {
+  return fetch(`${baseURL}/api/tasks/${id}`, {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(values),
+  });
+}
+
 test('tasks can be created and read back in scheduled order', async () => {
   const health = await fetch(`${baseURL}/api/health`);
   assert.deepEqual(await health.json(), { status: 'ok', database: 'connected' });
@@ -117,4 +125,110 @@ test('malformed JSON and unknown API routes return JSON errors', async () => {
   const unknown = await fetch(`${baseURL}/api/unknown`);
   assert.equal(unknown.status, 404);
   assert.equal((await unknown.json()).message, 'API route not found.');
+});
+
+test('a task can be viewed, edited, completed, reopened and deleted', async () => {
+  const created = await createTask({
+    title: 'Edit this task',
+    scheduledAt: '2026-11-16T09:00:00Z',
+    endAt: '2026-11-16T10:00:00Z',
+  });
+  assert.equal(created.status, 201);
+  const id = (await created.json()).task._id;
+  const view = await fetch(`${baseURL}/api/tasks/${id}`);
+  assert.equal(view.status, 200);
+  assert.equal((await view.json()).task.title, 'Edit this task');
+
+  const edited = await updateTask(id, {
+    title: 'Updated task',
+    description: 'New description',
+    priority: 'Low',
+    scheduledAt: '2026-11-17T12:00:00Z',
+    endAt: '2026-11-17T13:00:00Z',
+  });
+  assert.equal(edited.status, 200);
+  const details = (await edited.json()).task;
+  assert.equal(details.title, 'Updated task');
+  assert.equal(details.description, 'New description');
+  assert.equal(details.priority, 'Low');
+  assert.equal(details.scheduledAt, '2026-11-17T12:00:00.000Z');
+  assert.equal(details.endAt, '2026-11-17T13:00:00.000Z');
+
+  assert.equal((await updateTask(id, { status: 'Completed' })).status, 200);
+  const list = await fetch(`${baseURL}/api/tasks`);
+  assert.equal((await list.json()).tasks.find((task) => task._id === id).status, 'Completed');
+  const reopened = await updateTask(id, {
+    status: 'In Progress',
+    endAt: null,
+    priority: '',
+    description: '',
+  });
+  assert.equal(reopened.status, 200);
+  const cleared = (await reopened.json()).task;
+  assert.equal(cleared.status, 'In Progress');
+  assert.equal(cleared.endAt, null);
+  assert.equal(cleared.priority, '');
+  assert.equal(cleared.description, '');
+
+  const removed = await fetch(`${baseURL}/api/tasks/${id}`, { method: 'DELETE' });
+  assert.equal(removed.status, 204);
+  assert.equal(await removed.text(), '');
+  assert.equal((await fetch(`${baseURL}/api/tasks/${id}`)).status, 404);
+  assert.equal((await updateTask(id, { title: 'Missing task' })).status, 404);
+  assert.equal((await fetch(`${baseURL}/api/tasks/${id}`, { method: 'DELETE' })).status, 404);
+});
+
+test('invalid updates and partial reschedules do not change the saved task', async () => {
+  const created = await createTask({
+    title: 'Keep these details',
+    scheduledAt: '2026-11-16T09:00:00Z',
+    endAt: '2026-11-16T10:00:00Z',
+  });
+  const original = (await created.json()).task;
+  const id = original._id;
+
+  for (const values of [
+    {},
+    [],
+    { title: ' ' },
+    { title: 'x'.repeat(161) },
+    { description: 42 },
+    { scheduledAt: 'invalid' },
+    { scheduledAt: '2026-11-16T11:00:00Z' },
+    { endAt: '2026-11-16T08:00:00Z' },
+    { status: 'Unknown' },
+    { status: null },
+    { priority: 'Urgent' },
+    { createdAt: '2000-01-01T00:00:00Z' },
+  ]) {
+    const response = await updateTask(id, values);
+    assert.equal(response.status, 400, JSON.stringify(values));
+    assert.equal(typeof (await response.json()).message, 'string');
+  }
+
+  const response = await fetch(`${baseURL}/api/tasks/${id}`);
+  const saved = (await response.json()).task;
+  assert.equal(saved.title, original.title);
+  assert.equal(saved.scheduledAt, original.scheduledAt);
+  assert.equal(saved.endAt, original.endAt);
+  assert.equal(saved.status, original.status);
+  assert.equal(saved.createdAt, original.createdAt);
+  await fetch(`${baseURL}/api/tasks/${id}`, { method: 'DELETE' });
+});
+
+test('invalid task IDs return 400 and missing records return 404', async () => {
+  const missing = new mongoose.Types.ObjectId().toHexString();
+  for (const [id, expected] of [
+    ['not-an-id', 400],
+    [missing, 404],
+  ]) {
+    const viewed = await fetch(`${baseURL}/api/tasks/${id}`);
+    assert.equal(viewed.status, expected);
+    assert.equal(typeof (await viewed.json()).message, 'string');
+    assert.equal((await updateTask(id, { title: 'Missing' })).status, expected);
+    assert.equal(
+      (await fetch(`${baseURL}/api/tasks/${id}`, { method: 'DELETE' })).status,
+      expected,
+    );
+  }
 });
