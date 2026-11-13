@@ -1,19 +1,8 @@
 import 'dotenv/config';
-import express from 'express';
-import mongoose from 'mongoose';
+import app from './app.js';
 import { connectDB } from './db.js';
 
-const app = express();
 const port = Number(process.env.PORT || 3001);
-
-app.use(express.json());
-app.get('/api/health', (req, res) => {
-  const connected = mongoose.connection.readyState === 1;
-  res.status(connected ? 200 : 503).json({
-    status: connected ? 'ok' : 'error',
-    database: connected ? 'connected' : 'disconnected',
-  });
-});
 
 try {
   await connectDB();
