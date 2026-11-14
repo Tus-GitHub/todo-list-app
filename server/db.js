@@ -1,10 +1,30 @@
 import mongoose from 'mongoose';
 
-export async function connectDB() {
-  const uri = process.env.MONGODB_URI;
-  if (!uri) {
-    throw new Error('MONGODB_URI is missing. Add it to your .env file.');
-  }
+let connection;
+mongoose.connection.on('disconnected', () => {
+  connection = null;
+});
 
-  await mongoose.connect(uri, { serverSelectionTimeoutMS: 5000 });
+export async function connectDB() {
+  if (mongoose.connection.readyState === 1) return mongoose.connection;
+  if (!process.env.MONGODB_URI) {
+    const error = new Error('Database is not configured. Please try again later.');
+    error.status = 503;
+    throw error;
+  }
+  // Reuse one connection promise across concurrent serverless requests.
+  if (!connection) {
+    connection = mongoose
+      .connect(process.env.MONGODB_URI, {
+        serverSelectionTimeoutMS: 5000,
+        maxPoolSize: 5,
+      })
+      .catch(() => {
+        connection = null;
+        const error = new Error('Unable to reach the database. Please try again.');
+        error.status = 503;
+        throw error;
+      });
+  }
+  return connection;
 }

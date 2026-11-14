@@ -1,5 +1,5 @@
 import express from 'express';
-import mongoose from 'mongoose';
+import { connectDB } from './db.js';
 import taskRoutes from './routes/tasks.js';
 
 const app = express();
@@ -10,15 +10,19 @@ app.use('/api', (req, res, next) => {
   next();
 });
 
-app.get('/api/health', (req, res) => {
-  const connected = mongoose.connection.readyState === 1;
-  res.status(connected ? 200 : 503).json({
-    status: connected ? 'ok' : 'error',
-    database: connected ? 'connected' : 'disconnected',
-  });
+app.get('/api/health', async (req, res) => {
+  await connectDB();
+  res.json({ status: 'ok', database: 'connected' });
 });
 
-app.use('/api/tasks', taskRoutes);
+app.use(
+  '/api/tasks',
+  async (req, res, next) => {
+    await connectDB();
+    next();
+  },
+  taskRoutes,
+);
 app.use('/api', (req, res) => res.status(404).json({ message: 'API route not found.' }));
 
 app.use((error, req, res, next) => {
@@ -29,6 +33,7 @@ app.use((error, req, res, next) => {
   if (error.type === 'entity.too.large') {
     return res.status(413).json({ message: 'Task details are too large.' });
   }
+  if (error.status === 503) return res.status(503).json({ message: error.message });
   if (error.name === 'ValidationError') {
     return res.status(400).json({ message: Object.values(error.errors)[0].message });
   }

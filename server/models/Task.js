@@ -2,6 +2,7 @@ import mongoose from 'mongoose';
 
 const taskSchema = new mongoose.Schema(
   {
+    ownerKey: { type: String, required: true, select: false },
     title: { type: String, required: true, trim: true, maxlength: 160 },
     description: { type: String, trim: true, default: '', maxlength: 3000 },
     scheduledAt: { type: Date, required: true },
@@ -22,9 +23,18 @@ const taskSchema = new mongoose.Schema(
       default: 'In Progress',
     },
   },
-  { timestamps: true, versionKey: false },
+  {
+    timestamps: true,
+    versionKey: false,
+    toJSON: {
+      transform(_document, result) {
+        delete result.ownerKey;
+        return result;
+      },
+    },
+  },
 );
 
-taskSchema.index({ scheduledAt: 1 });
+taskSchema.index({ ownerKey: 1, scheduledAt: 1 });
 
 export default mongoose.model('Task', taskSchema);

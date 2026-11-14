@@ -1,6 +1,6 @@
 # TODO List
 
-A fresh MERN project, starting with a React client and an Express server.
+A mobile-first TODO List built with MongoDB, Express, React and Node.js, following the supplied Figma design.
 
 ## Current setup
 
@@ -13,7 +13,9 @@ A fresh MERN project, starting with a React client and an Express server.
 - Task deletion with confirmation, cancellation and retry after API errors. Successful deletion updates the list and weekly totals.
 - Figma search screen with case-insensitive API search across titles and descriptions, loading/empty/error states and task completion controls.
 - View All with expandable Monday–Sunday groups, open/completed totals and task date/time details. Tasks can be completed, edited, moved between weeks or deleted from this view.
-- MongoDB connection and task model.
+- Private task lists per browser using an HttpOnly cookie; API queries are scoped to that browser.
+- MongoDB connection and task model, with connection reuse for serverless requests.
+- Vercel configuration serving the React build and Express API from one origin.
 - Create, view, edit and delete task endpoints with input validation.
 - Task completion and reopening through status updates.
 - Express health endpoint at `/api/health` reports database connectivity.
@@ -79,7 +81,19 @@ Tests start an isolated MongoDB process and do not use the production database. 
 npm run build
 ```
 
-## Next steps
+## Deploy to Vercel
 
-1. Configure deployment and production environment settings.
-2. Verify the complete app against the assessment before release.
+Import this repository into Vercel. The included `vercel.json` uses `npm run build`, serves `dist`, and sends `/api/*` requests to the shared Express app in `api/index.js`.
+
+Add `MONGODB_URI` as a server-only production Secret in the Vercel project settings. Use a database user limited to the application's database and allow Vercel's connection from the Atlas network settings. Do not prefix this variable with `VITE_` or commit a real connection string. Vercel environment settings supply the value at runtime; no production `.env` file belongs in the repository.
+
+After deployment, check `/api/health`, create a task, reload and verify that it persists. Test editing, completion, search, weekly groups and deletion. A separate browser starts with its own empty task list. The cookie identifies that browser's list; clearing it starts a new list. Existing records from earlier versions without the new ownership field are left untouched and are not exposed by this API.
+
+## Project layout
+
+- `client/`: React screens and styling.
+- `server/`: Express routes, validation, task model and database connection.
+- `api/index.js`: Vercel function entry point for the same Express app.
+- `tests/`: isolated API and date/grouping checks.
+
+No assessment PDF or production credentials are included.
