@@ -3,6 +3,7 @@ async function request(path, options = {}) {
     ...options,
     headers: { 'Content-Type': 'application/json', ...options.headers },
   });
+  if (response.status === 204) return null;
   const data = await response.json().catch(() => null);
   if (!response.ok)
     throw new Error(data?.message || 'Unable to reach the task server. Please try again.');
@@ -23,4 +24,8 @@ export function createTask(values) {
 
 export function updateTask(id, values) {
   return request(`/tasks/${id}`, { method: 'PATCH', body: JSON.stringify(values) });
+}
+
+export function deleteTask(id) {
+  return request(`/tasks/${id}`, { method: 'DELETE' });
 }

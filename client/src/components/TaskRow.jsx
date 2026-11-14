@@ -1,6 +1,6 @@
 import { PencilLine, Trash2 } from 'lucide-react';
 
-export default function TaskRow({ task, busy, onToggle, onEdit }) {
+export default function TaskRow({ task, busy, onToggle, onEdit, onDelete }) {
   const completed = task.status === 'Completed';
   return (
     <li className="task-row">
@@ -17,9 +17,9 @@ export default function TaskRow({ task, busy, onToggle, onEdit }) {
       <div className="task-actions">
         <button
           type="button"
-          disabled
+          disabled={busy}
+          onClick={() => onDelete(task)}
           aria-label={`Delete ${task.title}`}
-          title="Task deletion will be added in a later step"
         >
           <Trash2 size={20} />
         </button>

@@ -1,10 +1,11 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Plus, Search, SquareCheck, SquareX } from 'lucide-react';
 import { getTasks, setTaskStatus } from '../api.js';
 import { addDays, dayKey, startOfWeek } from '../utils/dates.js';
 import DateStrip from './DateStrip.jsx';
 import TaskRow from './TaskRow.jsx';
 import TaskForm from './TaskForm.jsx';
+import DeleteTaskDialog from './DeleteTaskDialog.jsx';
 
 export default function Home() {
   const [today] = useState(() => new Date());
@@ -17,6 +18,8 @@ export default function Home() {
   const [retry, setRetry] = useState(0);
   const [editor, setEditor] = useState(null);
   const [notice, setNotice] = useState('');
+  const [deletingTask, setDeletingTask] = useState(null);
+  const addButton = useRef(null);
 
   useEffect(() => {
     const controller = new AbortController();
@@ -62,6 +65,12 @@ export default function Home() {
       `${editing ? 'Task updated' : 'Task created'} for ${savedDate.toLocaleDateString('en', { month: 'short', day: 'numeric', year: 'numeric' })}.`,
     );
     setEditor(null);
+  }
+
+  function taskDeleted(id) {
+    setTasks((items) => items.filter((task) => task._id !== id));
+    setDeletingTask(null);
+    setNotice('Task deleted.');
   }
 
   const weekStart = startOfWeek(today);
@@ -165,6 +174,10 @@ export default function Home() {
                 busy={updating.includes(task._id)}
                 onToggle={toggleTask}
                 onEdit={(task) => setEditor({ task, date: selected })}
+                onDelete={(task) => {
+                  setNotice('');
+                  setDeletingTask(task);
+                }}
               />
             ))}
           </ul>
@@ -186,6 +199,7 @@ export default function Home() {
       <div className="add-task-dock">
         <button
           type="button"
+          ref={addButton}
           className="add-task-button"
           disabled={loading || Boolean(error)}
           onClick={() => {
@@ -203,6 +217,14 @@ export default function Home() {
           date={editor.date}
           onClose={() => setEditor(null)}
           onSaved={taskSaved}
+        />
+      )}
+      {deletingTask && (
+        <DeleteTaskDialog
+          task={deletingTask}
+          onClose={() => setDeletingTask(null)}
+          onDeleted={taskDeleted}
+          fallbackFocus={addButton}
         />
       )}
     </main>
