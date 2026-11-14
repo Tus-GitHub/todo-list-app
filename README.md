@@ -12,13 +12,14 @@ A fresh MERN project, starting with a React client and an Express server.
 - Form validation, save errors, keyboard focus management and persisted API updates.
 - Task deletion with confirmation, cancellation and retry after API errors. Successful deletion updates the list and weekly totals.
 - Figma search screen with case-insensitive API search across titles and descriptions, loading/empty/error states and task completion controls.
+- View All with expandable Monday–Sunday groups, open/completed totals and task date/time details. Tasks can be completed, edited, moved between weeks or deleted from this view.
 - MongoDB connection and task model.
 - Create, view, edit and delete task endpoints with input validation.
 - Task completion and reopening through status updates.
 - Express health endpoint at `/api/health` reports database connectivity.
 - Vite development proxy for API requests.
 
-View All is not implemented yet; that dashboard control remains disabled. The dashboard shows the current week. Tasks saved for another week are stored and confirmed with their date; browsing other weeks will arrive with View All.
+The dashboard shows the current week. View All lists every week that contains tasks, newest first. The current week opens by default; if it has no tasks, the newest group opens instead. Tasks saved for other weeks can be found and managed there.
 
 ## Run locally
 
@@ -80,5 +81,5 @@ npm run build
 
 ## Next steps
 
-1. Add View All with expandable weekly task groups.
-2. Test the flows and configure deployment.
+1. Configure deployment and production environment settings.
+2. Verify the complete app against the assessment before release.

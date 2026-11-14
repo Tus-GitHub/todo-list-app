@@ -1,6 +1,14 @@
 import { PencilLine, Trash2 } from 'lucide-react';
 
-export default function TaskRow({ task, busy, onToggle, onEdit, onDelete, showActions = true }) {
+export default function TaskRow({
+  task,
+  busy,
+  onToggle,
+  onEdit,
+  onDelete,
+  showActions = true,
+  showDetails = false,
+}) {
   const completed = task.status === 'Completed';
   return (
     <li className="task-row">
@@ -12,7 +20,21 @@ export default function TaskRow({ task, busy, onToggle, onEdit, onDelete, showAc
           onChange={() => onToggle(task)}
           aria-label={`${completed ? 'Reopen' : 'Complete'} ${task.title}`}
         />
-        <span>{task.title}</span>
+        <div className="task-copy">
+          <span className="task-title">{task.title}</span>
+          {showDetails && (
+            <small className="task-schedule">
+              {new Date(task.scheduledAt).toLocaleString('en', {
+                weekday: 'short',
+                month: 'short',
+                day: 'numeric',
+                hour: 'numeric',
+                minute: '2-digit',
+              })}
+              {task.priority && ` · ${task.priority} priority`}
+            </small>
+          )}
+        </div>
       </label>
       {showActions && (
         <div className="task-actions">

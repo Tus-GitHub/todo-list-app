@@ -325,7 +325,7 @@ button:disabled {
   font-size: 12px;
   overflow-wrap: anywhere;
 }
-.task-label.completed span {
+.task-label.completed .task-title {
   text-decoration: line-through;
 }
 .task-actions {
@@ -637,5 +637,114 @@ button:disabled {
   margin-top: 25px;
 }
 .search-entry:enabled {
+  cursor: pointer;
+}
+
+.all-tasks-page {
+  position: fixed;
+  inset: 0;
+  width: min(100%, 390px);
+  max-width: none;
+  height: 100dvh;
+  max-height: none;
+  margin: 0 auto;
+  padding: 30px 25px 150px;
+  overflow-y: auto;
+  border: 0;
+  color: #16171d;
+  background: white;
+}
+.all-tasks-page::backdrop {
+  background: #f5f6fa;
+}
+.all-tasks-heading {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+}
+.all-tasks-heading button {
+  display: flex;
+  align-items: center;
+  padding: 0;
+  border: 0;
+  background: white;
+  color: #30303b;
+  cursor: pointer;
+}
+.all-tasks-heading h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+}
+.weekly-groups {
+  margin-top: 28px;
+}
+.week-card {
+  margin-top: 18px;
+  border: 1px solid #ededf4;
+}
+.week-card h3 {
+  margin: 0;
+}
+.week-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  width: 100%;
+  padding: 17px 14px;
+  border: 0;
+  background: #f5f4ff;
+  color: #30303b;
+  text-align: left;
+  cursor: pointer;
+}
+.week-summary strong {
+  display: block;
+  font-size: 12px;
+  font-weight: 600;
+}
+.week-summary small {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 14px;
+  margin-top: 8px;
+  font-size: 10px;
+  font-weight: 400;
+}
+.week-summary small span:first-child {
+  color: #b35b72;
+}
+.week-summary small span:last-child {
+  color: #666eaf;
+}
+.week-chevron {
+  flex-shrink: 0;
+  color: #9697bb;
+}
+.week-chevron.expanded {
+  transform: rotate(180deg);
+}
+.week-card .task-list {
+  margin: 0;
+  padding: 0 12px;
+}
+.week-card .task-row {
+  min-height: 80px;
+}
+.week-card .task-row:last-child {
+  border-bottom: 0;
+}
+.task-copy {
+  min-width: 0;
+}
+.task-schedule {
+  display: block;
+  margin-top: 5px;
+  color: #a0a0ad;
+  font-size: 9px;
+  line-height: 1.6;
+}
+.section-heading button:enabled {
   cursor: pointer;
 }

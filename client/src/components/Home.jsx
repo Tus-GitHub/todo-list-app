@@ -7,6 +7,7 @@ import TaskRow from './TaskRow.jsx';
 import TaskForm from './TaskForm.jsx';
 import DeleteTaskDialog from './DeleteTaskDialog.jsx';
 import SearchTasks from './SearchTasks.jsx';
+import AllTasks from './AllTasks.jsx';
 
 export default function Home() {
   const [today] = useState(() => new Date());
@@ -21,6 +22,8 @@ export default function Home() {
   const [notice, setNotice] = useState('');
   const [deletingTask, setDeletingTask] = useState(null);
   const [searching, setSearching] = useState(false);
+  const [viewingAll, setViewingAll] = useState(false);
+  const allTasksBackButton = useRef(null);
   const addButton = useRef(null);
 
   useEffect(() => {
@@ -148,7 +151,13 @@ export default function Home() {
                   day: 'numeric',
                 })}
           </h2>
-          <button type="button" disabled title="All tasks will be added in a later step">
+          <button
+            type="button"
+            onClick={() => {
+              setUpdateError('');
+              setViewingAll(true);
+            }}
+          >
             View All
           </button>
         </div>
@@ -213,12 +222,40 @@ export default function Home() {
           <Plus size={30} strokeWidth={1.3} />
         </button>
       </div>
+      {viewingAll && (
+        <AllTasks
+          tasks={tasks}
+          today={today}
+          loading={loading}
+          error={error}
+          updateError={updateError}
+          notice={notice}
+          updating={updating}
+          backButtonRef={allTasksBackButton}
+          onClose={() => setViewingAll(false)}
+          onRetry={() => setRetry((value) => value + 1)}
+          onToggle={toggleTask}
+          onEdit={(task) => {
+            setNotice('');
+            setEditor({ task, date: dayKey(task.scheduledAt) });
+          }}
+          onDelete={(task) => {
+            setNotice('');
+            setDeletingTask(task);
+          }}
+          onCreate={() => {
+            setNotice('');
+            setEditor({ task: null, date: dayKey(today) });
+          }}
+        />
+      )}
       {editor && (
         <TaskForm
           task={editor.task}
           date={editor.date}
           onClose={() => setEditor(null)}
           onSaved={taskSaved}
+          fallbackFocus={viewingAll ? allTasksBackButton : addButton}
         />
       )}
       {deletingTask && (
@@ -226,7 +263,7 @@ export default function Home() {
           task={deletingTask}
           onClose={() => setDeletingTask(null)}
           onDeleted={taskDeleted}
-          fallbackFocus={addButton}
+          fallbackFocus={viewingAll ? allTasksBackButton : addButton}
         />
       )}
       {searching && (

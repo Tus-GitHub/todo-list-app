@@ -3,7 +3,7 @@ import { X } from 'lucide-react';
 import { createTask, updateTask } from '../api.js';
 import { initialTaskFields, taskPayload } from '../utils/taskForm.js';
 
-export default function TaskForm({ task, date, onClose, onSaved }) {
+export default function TaskForm({ task, date, onClose, onSaved, fallbackFocus }) {
   const dialog = useRef(null);
   const titleInput = useRef(null);
   const [fields, setFields] = useState(() => initialTaskFields(task, date));
@@ -20,9 +20,10 @@ export default function TaskForm({ task, date, onClose, onSaved }) {
     return () => {
       element.close();
       document.body.style.overflow = previousOverflow;
-      if (previousFocus?.isConnected) previousFocus.focus();
+      if (previousFocus?.isConnected && previousFocus !== document.body) previousFocus.focus();
+      else fallbackFocus?.current?.focus();
     };
-  }, []);
+  }, [fallbackFocus]);
 
   function change(event) {
     const { name, value } = event.target;
