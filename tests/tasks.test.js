@@ -232,3 +232,51 @@ test('invalid task IDs return 400 and missing records return 404', async () => {
     );
   }
 });
+
+test('task search matches title and description without treating input as a regular expression', async () => {
+  const ids = [];
+  try {
+    for (const [title, description] of [
+      ['SearchScope [draft].*', 'First search fixture'],
+      ['SearchScope meeting', 'Review SEARCHSCOPE details'],
+      ['SearchScope planning', 'Weekly notes'],
+    ]) {
+      const response = await createTask({
+        title,
+        description,
+        scheduledAt: '2026-11-15T09:00:00Z',
+      });
+      ids.push((await response.json()).task._id);
+    }
+    async function search(query) {
+      const response = await fetch(`${baseURL}/api/tasks?q=${encodeURIComponent(query)}`);
+      assert.equal(response.status, 200);
+      return (await response.json()).tasks;
+    }
+    assert.equal((await search('  searchscope  ')).length, 3);
+    assert.deepEqual(
+      (await search('SEARCHSCOPE DETAILS')).map((task) => task._id),
+      [ids[1]],
+    );
+    assert.deepEqual(
+      (await search('[draft].*')).map((task) => task._id),
+      [ids[0]],
+    );
+    assert.deepEqual(await search('searchscope no match'), []);
+    const all = (await (await fetch(`${baseURL}/api/tasks`)).json()).tasks;
+    assert.deepEqual(
+      (await search('  ')).map((task) => task._id),
+      all.map((task) => task._id),
+    );
+  } finally {
+    for (const id of ids) await fetch(`${baseURL}/api/tasks/${id}`, { method: 'DELETE' });
+  }
+});
+
+test('invalid search query values return clear validation errors', async () => {
+  for (const query of [`q=${'x'.repeat(161)}`, 'q=one&q=two']) {
+    const response = await fetch(`${baseURL}/api/tasks?${query}`);
+    assert.equal(response.status, 400);
+    assert.equal(typeof (await response.json()).message, 'string');
+  }
+});

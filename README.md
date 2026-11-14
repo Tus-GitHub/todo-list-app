@@ -11,13 +11,14 @@ A fresh MERN project, starting with a React client and an Express server.
 - Figma bottom-sheet form for creating and editing tasks, with required title, date and start time, optional same-day end time, description and priority.
 - Form validation, save errors, keyboard focus management and persisted API updates.
 - Task deletion with confirmation, cancellation and retry after API errors. Successful deletion updates the list and weekly totals.
+- Figma search screen with case-insensitive API search across titles and descriptions, loading/empty/error states and task completion controls.
 - MongoDB connection and task model.
 - Create, view, edit and delete task endpoints with input validation.
 - Task completion and reopening through status updates.
 - Express health endpoint at `/api/health` reports database connectivity.
 - Vite development proxy for API requests.
 
-Search and View All are not implemented yet; those dashboard controls remain disabled. The dashboard shows the current week. Tasks saved for another week are stored and confirmed with their date; browsing other weeks will arrive with View All.
+View All is not implemented yet; that dashboard control remains disabled. The dashboard shows the current week. Tasks saved for another week are stored and confirmed with their date; browsing other weeks will arrive with View All.
 
 ## Run locally
 
@@ -45,7 +46,7 @@ Open http://127.0.0.1:4173. The API runs on port 3001. Copy `.env.example` to `.
 
 ## Task API
 
-- `GET /api/tasks` lists tasks in scheduled order.
+- `GET /api/tasks` lists tasks in scheduled order. Add `?q=notes` to search titles and descriptions. Search treats punctuation literally and accepts up to 160 characters; a blank query returns all tasks.
 - `POST /api/tasks` creates a task with a required title and `scheduledAt` timestamp. Description, `endAt` and priority are optional. Priority can be Low, Medium or High.
 - `GET /api/tasks/:id` returns a task.
 - `PATCH /api/tasks/:id` updates only the supplied fields, including status (In Progress or Completed). Send `endAt: null` to clear the optional end time.
@@ -79,5 +80,5 @@ npm run build
 
 ## Next steps
 
-1. Add search and expandable weekly task groups.
+1. Add View All with expandable weekly task groups.
 2. Test the flows and configure deployment.

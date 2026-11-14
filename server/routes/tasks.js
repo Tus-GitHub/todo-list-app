@@ -13,7 +13,24 @@ router.param('id', (req, res, next, id) => {
 });
 
 router.get('/', async (req, res) => {
-  const tasks = await Task.find().sort({ scheduledAt: 1, _id: 1 });
+  if (
+    req.query.q !== undefined &&
+    (typeof req.query.q !== 'string' || req.query.q.trim().length > 160)
+  ) {
+    return res
+      .status(400)
+      .json({ message: 'Search must be text with no more than 160 characters.' });
+  }
+  const query = req.query.q?.trim();
+  const filter = {};
+  if (query) {
+    const literal = query.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    filter.$or = [
+      { title: { $regex: literal, $options: 'i' } },
+      { description: { $regex: literal, $options: 'i' } },
+    ];
+  }
+  const tasks = await Task.find(filter).sort({ scheduledAt: 1, _id: 1 });
   res.json({ tasks });
 });
 

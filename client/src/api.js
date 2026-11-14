@@ -10,8 +10,9 @@ async function request(path, options = {}) {
   return data;
 }
 
-export function getTasks(signal) {
-  return request('/tasks', { signal });
+export function getTasks(signal, query = '') {
+  const search = new URLSearchParams({ q: query.trim() });
+  return request(`/tasks?${search}`, { signal });
 }
 
 export function setTaskStatus(id, status) {

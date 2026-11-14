@@ -6,6 +6,7 @@ import DateStrip from './DateStrip.jsx';
 import TaskRow from './TaskRow.jsx';
 import TaskForm from './TaskForm.jsx';
 import DeleteTaskDialog from './DeleteTaskDialog.jsx';
+import SearchTasks from './SearchTasks.jsx';
 
 export default function Home() {
   const [today] = useState(() => new Date());
@@ -19,6 +20,7 @@ export default function Home() {
   const [editor, setEditor] = useState(null);
   const [notice, setNotice] = useState('');
   const [deletingTask, setDeletingTask] = useState(null);
+  const [searching, setSearching] = useState(false);
   const addButton = useRef(null);
 
   useEffect(() => {
@@ -91,8 +93,8 @@ export default function Home() {
       <button
         type="button"
         className="search-entry"
-        disabled
-        aria-label="Search tasks (coming in a later step)"
+        onClick={() => setSearching(true)}
+        aria-label="Search tasks"
       >
         <span>Search for a task</span>
         <Search size={20} aria-hidden="true" />
@@ -225,6 +227,14 @@ export default function Home() {
           onClose={() => setDeletingTask(null)}
           onDeleted={taskDeleted}
           fallbackFocus={addButton}
+        />
+      )}
+      {searching && (
+        <SearchTasks
+          onClose={() => setSearching(false)}
+          onTaskUpdated={(updated) =>
+            setTasks((items) => items.map((task) => (task._id === updated._id ? updated : task)))
+          }
         />
       )}
     </main>
