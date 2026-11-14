@@ -1,0 +1,18 @@
+async function request(path, options = {}) {
+  const response = await fetch(`/api${path}`, {
+    ...options,
+    headers: { 'Content-Type': 'application/json', ...options.headers },
+  });
+  const data = await response.json().catch(() => null);
+  if (!response.ok)
+    throw new Error(data?.message || 'Unable to reach the task server. Please try again.');
+  return data;
+}
+
+export function getTasks(signal) {
+  return request('/tasks', { signal });
+}
+
+export function setTaskStatus(id, status) {
+  return request(`/tasks/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) });
+}

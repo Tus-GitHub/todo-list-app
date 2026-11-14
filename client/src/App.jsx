@@ -1,5 +1,6 @@
 import { useState } from 'react';
 import Onboarding from './components/Onboarding.jsx';
+import Home from './components/Home.jsx';
 
 function hasStarted() {
   try {
@@ -23,10 +24,5 @@ export default function App() {
 
   if (!started) return <Onboarding onStart={start} />;
 
-  return (
-    <main className="app-home">
-      <h1>TODO List</h1>
-      <p>A little structure for your day.</p>
-    </main>
-  );
+  return <Home />;
 }
