@@ -414,3 +414,122 @@ button:disabled {
     transition: none;
   }
 }
+
+.task-sheet {
+  position: fixed;
+  inset: auto 0 0;
+  width: min(100%, 390px);
+  max-width: none;
+  max-height: calc(100dvh - 24px);
+  margin: 0 auto;
+  padding: 25px;
+  overflow-y: auto;
+  border: 0;
+  color: #16171d;
+  background: white;
+}
+.task-sheet::backdrop {
+  background: rgb(0 0 0 / 28%);
+}
+.task-sheet-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 24px;
+}
+.task-sheet h2 {
+  margin: 0;
+  font-size: 17px;
+  font-weight: 600;
+}
+.task-sheet-heading button {
+  display: flex;
+  padding: 2px;
+  border: 0;
+  background: white;
+  color: #363640;
+  cursor: pointer;
+}
+.task-sheet fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}
+.task-sheet label {
+  display: block;
+  margin: 22px 0 8px;
+  color: #8e8e96;
+  font-size: 11px;
+}
+.task-sheet fieldset > label:first-child {
+  margin-top: 0;
+}
+.task-sheet label span {
+  font-size: 9px;
+}
+.task-sheet input,
+.task-sheet textarea,
+.task-sheet select {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  min-height: 40px;
+  padding: 10px 9px;
+  border: 1px solid #ededf0;
+  border-radius: 0;
+  color: #30303b;
+  background: white;
+  font: inherit;
+  font-size: 12px;
+}
+.task-sheet input::placeholder,
+.task-sheet textarea::placeholder {
+  color: #96969f;
+  opacity: 1;
+}
+.task-sheet textarea {
+  min-height: 98px;
+  resize: vertical;
+}
+.time-fields {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.save-task-button {
+  width: 100%;
+  min-height: 48px;
+  margin-top: 24px;
+  padding: 12px;
+  border: 0;
+  background: #4565ec;
+  color: white;
+  font-size: 13px;
+  cursor: pointer;
+}
+.save-task-button:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+.form-error {
+  margin-top: 14px;
+  color: #a43246;
+  font-size: 12px;
+  line-height: 1.6;
+}
+.save-notice {
+  margin-top: 14px;
+  color: #4c5d9c;
+  font-size: 11px;
+  line-height: 1.6;
+}
+.task-actions button:enabled {
+  cursor: pointer;
+}
+.task-actions button:enabled:hover {
+  color: #4565ec;
+}
+.add-task-button:enabled {
+  cursor: pointer;
+}

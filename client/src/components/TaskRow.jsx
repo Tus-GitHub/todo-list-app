@@ -1,6 +1,6 @@
 import { PencilLine, Trash2 } from 'lucide-react';
 
-export default function TaskRow({ task, busy, onToggle }) {
+export default function TaskRow({ task, busy, onToggle, onEdit }) {
   const completed = task.status === 'Completed';
   return (
     <li className="task-row">
@@ -25,9 +25,9 @@ export default function TaskRow({ task, busy, onToggle }) {
         </button>
         <button
           type="button"
-          disabled
+          disabled={busy}
+          onClick={() => onEdit(task)}
           aria-label={`Edit ${task.title}`}
-          title="Task editing will be added in a later step"
         >
           <PencilLine size={20} />
         </button>

@@ -4,6 +4,7 @@ import { getTasks, setTaskStatus } from '../api.js';
 import { addDays, dayKey, startOfWeek } from '../utils/dates.js';
 import DateStrip from './DateStrip.jsx';
 import TaskRow from './TaskRow.jsx';
+import TaskForm from './TaskForm.jsx';
 
 export default function Home() {
   const [today] = useState(() => new Date());
@@ -14,6 +15,8 @@ export default function Home() {
   const [updateError, setUpdateError] = useState('');
   const [updating, setUpdating] = useState([]);
   const [retry, setRetry] = useState(0);
+  const [editor, setEditor] = useState(null);
+  const [notice, setNotice] = useState('');
 
   useEffect(() => {
     const controller = new AbortController();
@@ -44,6 +47,21 @@ export default function Home() {
     } finally {
       setUpdating((ids) => ids.filter((id) => id !== task._id));
     }
+  }
+
+  function taskSaved(saved) {
+    const editing = Boolean(editor.task);
+    setTasks((items) =>
+      [...items.filter((item) => item._id !== saved._id), saved].sort(
+        (a, b) => new Date(a.scheduledAt) - new Date(b.scheduledAt) || a._id.localeCompare(b._id),
+      ),
+    );
+    const savedDate = new Date(saved.scheduledAt);
+    if (savedDate >= weekStart && savedDate < weekEnd) setSelected(dayKey(savedDate));
+    setNotice(
+      `${editing ? 'Task updated' : 'Task created'} for ${savedDate.toLocaleDateString('en', { month: 'short', day: 'numeric', year: 'numeric' })}.`,
+    );
+    setEditor(null);
   }
 
   const weekStart = startOfWeek(today);
@@ -146,11 +164,17 @@ export default function Home() {
                 task={task}
                 busy={updating.includes(task._id)}
                 onToggle={toggleTask}
+                onEdit={(task) => setEditor({ task, date: selected })}
               />
             ))}
           </ul>
         ) : (
           <p className="task-message">No tasks for this day.</p>
+        )}
+        {notice && (
+          <p className="save-notice" role="status">
+            {notice}
+          </p>
         )}
         {updateError && (
           <p className="update-error" role="alert">
@@ -163,12 +187,24 @@ export default function Home() {
         <button
           type="button"
           className="add-task-button"
-          disabled
-          aria-label="Add task (coming in a later step)"
+          disabled={loading || Boolean(error)}
+          onClick={() => {
+            setNotice('');
+            setEditor({ task: null, date: selected });
+          }}
+          aria-label="Add task"
         >
           <Plus size={30} strokeWidth={1.3} />
         </button>
       </div>
+      {editor && (
+        <TaskForm
+          task={editor.task}
+          date={editor.date}
+          onClose={() => setEditor(null)}
+          onSaved={taskSaved}
+        />
+      )}
     </main>
   );
 }

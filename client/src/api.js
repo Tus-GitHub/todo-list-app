@@ -16,3 +16,11 @@ export function getTasks(signal) {
 export function setTaskStatus(id, status) {
   return request(`/tasks/${id}`, { method: 'PATCH', body: JSON.stringify({ status }) });
 }
+
+export function createTask(values) {
+  return request('/tasks', { method: 'POST', body: JSON.stringify(values) });
+}
+
+export function updateTask(id, values) {
+  return request(`/tasks/${id}`, { method: 'PATCH', body: JSON.stringify(values) });
+}
