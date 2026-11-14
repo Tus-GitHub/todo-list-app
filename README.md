@@ -4,14 +4,14 @@ A fresh MERN project, starting with a React client and an Express server.
 
 ## Current setup
 
-- React page with a basic title and styling.
+- Figma onboarding screen with Get Started navigation and saved browser progress.
 - MongoDB connection and task model.
 - Create, view, edit and delete task endpoints with input validation.
 - Task completion and reopening through status updates.
 - Express health endpoint at `/api/health` reports database connectivity.
 - Vite development proxy for API requests.
 
-Search and the Figma screens are not implemented yet.
+The dashboard, task form and search screens are not implemented yet.
 
 ## Run locally
 
@@ -73,6 +73,6 @@ npm run build
 
 ## Next steps
 
-1. Build the Figma screens and connect the task form.
+1. Build the dashboard and task form from Figma and connect them to the API.
 2. Add search and weekly summaries.
 3. Test the flows and configure deployment.
